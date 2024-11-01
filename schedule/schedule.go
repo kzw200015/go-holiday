@@ -1,14 +1,14 @@
-package main
+package schedule
 
 import (
 	"github.com/robfig/cron/v3"
-	"go-holiday/holiday"
+	"go-holiday/server/holiday"
 	"log/slog"
 )
 
 var c = cron.New()
 
-func startSchedule() error {
+func StartSchedule() error {
 	_, err := c.AddFunc("0 23 * * *", func() {
 		err := holiday.LoadHolidaysFromRemote()
 		if err != nil {

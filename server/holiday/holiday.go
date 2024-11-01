@@ -18,10 +18,10 @@ var mu sync.RWMutex
 
 func IsHoliday(date string) (bool, error) {
 	mu.RLock()
-	h := holidays[date]
+	holiday := holidays[date]
 	mu.RUnlock()
-	if h != nil {
-		return h.IsOffDay, nil
+	if holiday != nil {
+		return holiday.IsOffDay, nil
 	} else {
 		parsed, err := time.Parse("2006-01-02", date)
 		if err != nil {
@@ -39,10 +39,10 @@ func LoadHolidaysFromRemote() error {
 		return err
 	}
 	mu.Lock()
-	for _, ele := range gjson.GetBytes(response.Body(), "days").Array() {
-		name := ele.Get("name").String()
-		date := ele.Get("date").String()
-		isOffDay := ele.Get("date").Bool()
+	for _, day := range gjson.GetBytes(response.Body(), "days").Array() {
+		name := day.Get("name").String()
+		date := day.Get("date").String()
+		isOffDay := day.Get("date").Bool()
 		holidays[date] = &Holiday{
 			Name:     name,
 			Date:     date,

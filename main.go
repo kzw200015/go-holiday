@@ -1,43 +1,29 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"go-holiday/holiday"
-	"go-holiday/utils/http"
+	"go-holiday/schedule"
+	"go-holiday/server"
 	"log/slog"
-	"time"
 )
 
 func main() {
 	initConfig()
-	err := holiday.LoadHolidaysFromRemote()
+
+	err := schedule.StartSchedule()
 	if err != nil {
-		panic(err)
+		slog.Error("failed to start schedule", "error", err)
+		return
 	}
-	err = startSchedule()
+
+	httpServer, err := server.CreateServer()
 	if err != nil {
-		panic(err)
+		slog.Error("failed to create server", "error", err)
+		return
 	}
-	r := gin.Default()
-	group := r.Group("/holidays")
-	{
-		group.GET("/is-holiday", func(context *gin.Context) {
-			date := context.Query("date")
-			if date == "" {
-				date = time.Now().Format("2006-01-02")
-			}
-			isHoliday, err := holiday.IsHoliday(date)
-			if err != nil {
-				http.Error(context, err)
-				return
-			}
-			http.Ok(context, gin.H{
-				"isHoliday": isHoliday,
-			})
-		})
-	}
-	err = r.Run()
+
+	err = httpServer.Run()
 	if err != nil {
-		slog.Error("failed to start server", "error", err)
+		slog.Error("failed to run server", "error", err)
+		return
 	}
 }
